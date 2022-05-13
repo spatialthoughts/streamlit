@@ -24,7 +24,6 @@ def geocode(query):
     x, y = data['features'][0]['geometry']['coordinates']
     return (y, x)
 
-@st.cache
 def get_directions(origin_name, destination_name):    
     origin_coords = geocode(origin_name)
     destination_coords = geocode(destination_name)
