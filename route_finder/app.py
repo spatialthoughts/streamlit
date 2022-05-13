@@ -56,8 +56,8 @@ def get_directions(origin_name, destination_name):
 st.title('Route Finder')
 st.markdown('This app uses the [OpenRouteService API](https://openrouteservice.org/) to geocode and get directions between the specified origin and destination. [[view source code](https://github.com/spatialthoughts/streamlit/tree/main/route_finder)]')
 st.text('Enter any city name or address below.')
-origin = st.text_input('Origin (Example, San Francisco, CA)')
-destination = st.text_input('Destination (Example, San Jose, CA)')
+origin = st.text_input('Origin (Example: San Francisco, CA)')
+destination = st.text_input('Destination (Example: San Jose, CA)')
 mode = st.selectbox('Travel Mode', ['Car', 'Walk', 'Bike'])
 button = st.button('Get Directions')
 
