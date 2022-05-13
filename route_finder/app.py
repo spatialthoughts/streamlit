@@ -72,6 +72,11 @@ if origin:
         popup=origin,
         icon=folium.Icon(color='green', icon='crosshairs', prefix='fa')
         ).add_to(m)
+    origin_bb = [
+        (origin_coords[0] - 0.05, origin_coords[1] - 0.05),
+        (origin_coords[0] + 0.05, origin_coords[1] + 0.05)]
+    m.fit_bounds(origin_bb)
+    
 if destination:
     destination_coords = geocode(destination)
     folium.Marker(
