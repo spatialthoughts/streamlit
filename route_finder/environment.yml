@@ -1,0 +1,6 @@
+name: python_dataviz
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - streamlit-folium
