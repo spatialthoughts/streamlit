@@ -2,6 +2,8 @@ import streamlit as st
 import folium
 import leafmap.foliumap as leafmap
 import geopandas as gpd
+import matplotlib.pyplot as plt
+
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 
@@ -23,20 +25,33 @@ roads_gdf = get_data('karnataka_major_roads')
 
 @st.cache
 def get_roads_by_district(roads_gdf, districts_gdf):
+
+    def get_category(row):
+        ref = str(row['ref'])
+        if 'NH' in ref:
+            return 'NH'
+        elif 'SH' in ref:
+            return 'SH'
+        else:
+            return 'Others'
+    
+    roads_gdf['category'] = roads_gdf.apply(get_category, axis=1)
     roads_reprojected = roads_gdf.to_crs('EPSG:32643')
     roads_reprojected['length'] = roads_reprojected['geometry'].length
     districts_reprojected = districts_gdf.to_crs('EPSG:32643')
     joined = gpd.sjoin(roads_reprojected, districts_reprojected, how='left', op='intersects')
-    results = joined.groupby('DISTRICT')['length'].sum()/1000
-    return results.to_dict()
-
-nh_gdf = roads_gdf[roads_gdf['ref'].str.match('^NH') == True]
-nh_lengths = get_roads_by_district(nh_gdf, districts_gdf)
+    length_by_type = joined.groupby(['DISTRICT', 'category']).length.sum()/1000
+    return length_by_type.unstack().reset_index()
 
 districts = districts_gdf.DISTRICT.values
 district = st.sidebar.selectbox('Select a District', districts)
 
-stats = st.sidebar.text(nh_lengths[district])
+lengths_df = get_roads_by_district(roads_gdf.copy(), districts_gdf)
+district_lengths = lengths_df[lengths_df['DISTRICT'] == district]
+
+fig, ax = plt.subplots(1, 1)
+district_lengths.plot(kind='bar', ax=ax, color=['blue', 'red', 'gray'], ylabel='Kilometers')
+stats = st.sidebar.pyplot(fig)
 
 m = leafmap.Map(
     layers_control=True,
@@ -53,14 +68,6 @@ m.add_gdf(
     style={'color': 'black', 'fillOpacity': 0.3, 'weight': 0.5},
     )
 
-m.add_gdf(
-    gdf=nh_gdf,
-    layer_name='national_highways',
-    zoom_to_layer=False,
-    info_mode=None,
-    style={'color': 'blue', 'weight': 0.5},
-    )
-    
 selected_gdf = districts_gdf[districts_gdf['DISTRICT'] == district]
 
 m.add_gdf(
